@@ -1,0 +1,78 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.swiper {
+    position:relative;
+    width: 100%;
+    height: auto;
+    align-items: center;
+    margin:0 !important;
+    overflow: visible !important;
+  }
+  
+  .swiper-slide {
+    /* Center slide text vertically */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+  }
+  
+  /* .swiper-slide img {
+    display: block;
+    width: auto;
+    height: auto;
+    object-fit: cover;
+  }
+   */
+  /* .swiper-button-prev, .swiper-button-next {
+      
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #FF8C42 !important;
+    background-color: #4A4A4A;
+    height: 500px;
+    padding: 30px;
+    border-radius: 50%;
+  } */
+
+  .swiper-button-prev, .swiper-button-next {
+    position: absolute; /* Positions the arrows at the edges of the container */
+    top: 50%; /* Vertically center the buttons */
+    /* transform: translateY(-50%); Fine-tune vertical centering */
+    color: #FF8C42 !important; /* Arrow color */
+    background-color: #4a4a4aa5; /* Button background */
+    padding: 24px; /* Adjust padding to fit your design */
+    border-radius: 50%; /* Circular buttons */
+    z-index: 1000; /* Ensure buttons appear on top */
+    cursor: pointer; /* Change cursor to pointer on hover */
+    ;
+    
+  }
+  
+  .swiper-button-prev {
+    left: 10px !important;
+    z-index: 1000; /* Position the "Previous" button on the left */
+    
+  }
+
+  .swiper-button-prev::after{
+    font-size: 24px !important;
+    font-weight: bolder;
+} 
+
+.swiper-button-next::after{
+    font-weight: bolder;
+      font-size: 24px !important;
+  }
+  
+  .swiper-button-next {
+    right: 10px !important; /* Position the "Next" button on the right */
+  }
+
+  .swiper-button-prev:hover,
+.swiper-button-next:hover {
+    background-color: rgba(0, 0, 0, 0.7); /* Darken button on hover */
+}
