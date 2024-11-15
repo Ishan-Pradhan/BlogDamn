@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-// Import Swiper React components
+Import Swiper React components
 import { Swiper, SwiperSlide } from 'swiper/react';
 
 // Import Swiper styles
@@ -12,8 +12,8 @@ import { Pagination,Navigation } from 'swiper/modules';
 
 function HotSection() {
   return (
-    <div className='w-full flex gap-10 relative border-b border-line pb-10 my-10  overflow-hidden'>
-        <div className='w-90%] overflow-hidden relative rounded-xl'>
+    <div className='w-full flex relative border-b border-line pb-10 my-10 '>
+        <div className='overflow-hidden relative rounded-xl'>
           <Swiper
             slidesPerView={1}
             breakpoints={{
@@ -106,5 +106,7 @@ function HotSection() {
         </div>
   )
 }
+
+
 
 export default HotSection

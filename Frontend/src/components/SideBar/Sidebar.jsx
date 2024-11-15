@@ -3,7 +3,7 @@ import React from 'react'
 function Sidebar() {
   return (
     <div className='hidden md:flex md:max-w-2xl   '>
-    <aside className='md:w-60  border-r  overflow-y-auto  md:top-10 border-line flex flex-col gap-5 justify-items-center pr-10'>
+    <aside className='md:w-60  border-r fixed h-full  md:top-14 border-line flex flex-col gap-5 justify-items-center pr-10'>
         <div className='flex flex-col gap-3 border-b py-10'>
             
       <span className='border px-4 rounded py-1'>🏠 Home</span>

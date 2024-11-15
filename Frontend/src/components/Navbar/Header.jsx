@@ -6,7 +6,7 @@ import Button from '../Button'
 
 function Header() {
   return (
-    <nav className='border border-b-line py-2  mx-auto '>
+    <nav className='border bg-white border-b-line py-2  mx-auto sticky top-0 ' style={{zIndex:1000}}>
      <div className="container h-10 flex justify-between items-center">
     <Logo/>
     <div className='flex gap-4'>
