@@ -14,13 +14,13 @@ const Home = () => {
         <Sidebar />
 
         {/* Main Content Area */}
-        <div className="flex flex-col w-full md:ml-72 h-full  ">
+        <div className="flex flex-col w-full md:ml-[16.2rem] h-full  ">
           {/* Hot Section */}
           <HotSection2 />
           
           {/* Posts and Trending */}
-          <div className="flex gap-6">
-            <div className="md:w-[70%]  h-full ">
+          <div className="flex w-full  md:gap-6">
+            <div className="w-full lg:w-[70%]  h-full ">
               <h1 className='font-semibold text-xl border-b pb-4'>Blogs</h1>
               <Posts />
             </div>

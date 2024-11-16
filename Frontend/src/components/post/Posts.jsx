@@ -3,7 +3,7 @@ import PostItems from './PostItems'
 
 function Posts() {
   return (
-    <div className='flex flex-col gap-4 '>
+    <div className='flex flex-col  '>
       <PostItems/>
       <PostItems/>
       <PostItems/>
