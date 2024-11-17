@@ -14,7 +14,7 @@ const Home = () => {
         <Sidebar />
 
         {/* Main Content Area */}
-        <div className="flex flex-col w-full md:ml-[16.2rem] h-full  ">
+        <div className="flex flex-col w-full md:ml-[17.2rem] h-full  ">
           {/* Hot Section */}
           <HotSection2 />
           

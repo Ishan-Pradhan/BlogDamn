@@ -4,6 +4,7 @@ import CreateBlog from "./pages/CreateBlog";
 import ErrorBoundary from "./components/ErrorBoundry";
 
 import LoginPage from "./pages/Auth/LoginPage";
+import SingleBlog from "./pages/SingleBlog";
 
 const App = ()=>{
   return (
@@ -12,6 +13,7 @@ const App = ()=>{
       <Route index element={<Home/>}/> 
       <Route path="/Home" element={<Home/>}> </Route>
       <Route path="/CreateBlog" element={<CreateBlog/>}></Route>
+      <Route path="/SingleBlog" element={<SingleBlog/>}></Route>
       <Route path="/login" element={<LoginPage/>}></Route>
   
     </Routes>
