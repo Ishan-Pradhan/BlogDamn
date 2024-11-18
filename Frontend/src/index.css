@@ -10,7 +10,7 @@ html, body {
 }
 
 .splide__arrow--prev{
-  left:-24px !important;
+  left:-30px !important;
   height: 50px !important;
   width: 50px !important;
   background-color: #FF8C42 !important;
@@ -19,7 +19,7 @@ html, body {
 }
 
 .splide__arrow--next{
-  right:-24px !important;
+  right:-30px !important;
   height: 50px !important;
   width: 50px !important;
   background-color: #FF8C42 !important;

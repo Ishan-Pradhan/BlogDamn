@@ -1,6 +1,6 @@
 import React from 'react'
 import Logo from './Logo'
-import { NavLink } from 'react-router-dom'
+import { Link, NavLink } from 'react-router-dom'
 import SearchBar from './SearchBar'
 import Button from '../Button'
 
@@ -14,8 +14,8 @@ function Header() {
     <Button  view='small' color="primary">Login</Button>
     </div>
     <div className='hidden md:flex gap-4'>
-    <Button color="secondary" icon = {"fa-plus"}>Create</Button>
-    <Button color="primary">Log in</Button>
+    <Link to="/CreateBlog"><Button color="secondary" icon = {"fa-plus"}>Create</Button></Link>
+    <Link to="/login"><Button color="primary">Log in</Button></Link>
     </div>
      </div>
     </nav>

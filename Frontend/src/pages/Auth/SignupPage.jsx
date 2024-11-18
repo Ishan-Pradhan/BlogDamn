@@ -1,9 +1,9 @@
 import React from 'react'
 import Header from '../../components/Navbar/Header'
 import Button from '../../components/Button'
-import { Link } from 'react-router-dom'
+import { Link, NavLink } from 'react-router-dom'
 
-function LoginPage() {
+function SignupPage() {
   return (
     <div>
       <Header/>
@@ -13,14 +13,16 @@ function LoginPage() {
 <span className='text-xl font-bold uppercase tracking-wider'>Welcome Back,</span>
 <p className='text-gray-700'>Please enter your details to log in.</p>
           </div>
-          <input type="text" placeholder='Email or Phone' className='border border-gray-700 py-2 px-4 rounded-sm md:w-72' />
+          <input type="text" placeholder='Name' className='border border-gray-700 py-2 px-4 rounded-sm md:w-72' />
+          <input type="text" placeholder='Email' className='border border-gray-700 py-2 px-4 rounded-sm md:w-72' />
+          <input type="text" placeholder='Phone' className='border border-gray-700 py-2 px-4 rounded-sm md:w-72' />
           <input type='password' placeholder='Password' className='border border-gray-700 py-2 px-4 rounded-sm md:w-72'/>
-          <Button color="primary" rounded="sm"> Sign in</Button>
-          <span>Don't have an account? <Link to="/signup"><span className='text-secondary underline'>Join Now</span></Link> </span>
+          <Button color="primary" rounded="sm"> Sign Up</Button>
+          <span>Already have an account? <NavLink to="/login"><span className='text-secondary underline'>Sign in</span></NavLink> </span>
         </div>
       </div>
     </div>
   )
 }
 
-export default LoginPage
+export default SignupPage
