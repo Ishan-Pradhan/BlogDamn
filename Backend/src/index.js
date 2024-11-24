@@ -25,4 +25,8 @@ const startServer = async () => {
   }
 };
 
+app.get("/", (req, res) => {
+  return res.send("<h1>Hello</h1>");
+});
+
 startServer();
