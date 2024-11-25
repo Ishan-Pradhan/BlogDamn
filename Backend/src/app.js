@@ -23,9 +23,9 @@ app.use(
   })
 );
 
-import registerUser from "./routes/auth.routes.js";
+import userRouter from "./routes/auth.routes.js";
 
-app.use("/api/v1/", registerUser);
+app.use("/api/v1/", userRouter);
 
 app.use((err, req, res, next) => {
   console.error(err.stack);

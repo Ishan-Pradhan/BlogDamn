@@ -2,7 +2,6 @@ import { comparePassword } from "../helpers/authHelper.js";
 import { User } from "../models/User.models.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { generateAccessToken, generateRefreshToken } from "../utils/token.js";
-import JWT from "jsonwebtoken";
 
 const registerController = async (req, res) => {
   try {
@@ -106,6 +105,40 @@ const loginController = async (req, res) => {
   }
 };
 
+const googleCallbackController = async (req, res) => {
+  try {
+    const user = req.user; // Passport injects `user` into the request object.
+
+    // Generate JWT tokens
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
+
+    // Optionally, save refresh token to the user document
+    user.refreshTokens = user.refreshTokens || [];
+    user.refreshTokens.push(refreshToken);
+    await user.save();
+
+    // Send response back to the client
+    res.status(200).json({
+      success: true,
+      message: "Google Sign-In Successful",
+      user: {
+        avatar: user.avatar,
+        name: user.name,
+        email: user.email,
+        role: user.role || "user",
+      },
+      accessToken,
+      refreshToken,
+    });
+  } catch (error) {
+    console.error("Error in Google callback:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Google Authentication failed" });
+  }
+};
+
 const allUsers = async (req, res) => {
   try {
     const users = await User.find();
@@ -131,4 +164,10 @@ const getUserById = async (req, res) => {
   }
 };
 
-export { registerController, loginController, getUserById, allUsers };
+export {
+  registerController,
+  loginController,
+  googleCallbackController,
+  getUserById,
+  allUsers,
+};
