@@ -1,20 +1,20 @@
 import { comparePassword } from "../helpers/authHelper.js";
+import OTP from "../models/OTP.js";
 import { User } from "../models/User.models.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { generateAccessToken, generateRefreshToken } from "../utils/token.js";
+import { generateOtpController } from "./otp.controller.js";
 
 const registerController = async (req, res) => {
   try {
     console.log("Request Body:", req.body);
     console.log("Uploaded File:", req.file);
 
-    const { name, username, email, password } = req.body;
+    const { username, email, password } = req.body;
 
     // console.log(name, username, email, password);
 
-    if (
-      [name, username, email, password].some((field) => field.trim() === "")
-    ) {
+    if ([username, email, password].some((field) => field.trim() === "")) {
       return res
         .status(400)
         .send({ success: false, message: "All fields are required" });
@@ -36,7 +36,7 @@ const registerController = async (req, res) => {
 
     const newUser = new User({
       avatar: avatarImage.url,
-      name,
+
       username,
       email,
       password,
@@ -92,7 +92,6 @@ const loginController = async (req, res) => {
       message: "Login Success",
       user: {
         avatar: user.avatar,
-        name: user.name,
         username: user.username,
         email: user.email,
         role: user.role,
@@ -105,39 +104,93 @@ const loginController = async (req, res) => {
   }
 };
 
-const googleCallbackController = async (req, res) => {
+const forgotPasswordController = async (req, res) => {
+  const { email } = req.body;
+
   try {
-    const user = req.user; // Passport injects `user` into the request object.
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Email not registered" });
+    }
 
-    // Generate JWT tokens
-    const accessToken = generateAccessToken(user);
-    const refreshToken = generateRefreshToken(user);
-
-    // Optionally, save refresh token to the user document
-    user.refreshTokens = user.refreshTokens || [];
-    user.refreshTokens.push(refreshToken);
-    await user.save();
-
-    // Send response back to the client
-    res.status(200).json({
-      success: true,
-      message: "Google Sign-In Successful",
-      user: {
-        avatar: user.avatar,
-        name: user.name,
-        email: user.email,
-        role: user.role || "user",
-      },
-      accessToken,
-      refreshToken,
-    });
+    req.body.purpose = "password-reset"; // Indicate OTP purpose
+    await generateOtpController(req, res); // Reuse OTP generation logic
   } catch (error) {
-    console.error("Error in Google callback:", error);
-    res
-      .status(500)
-      .json({ success: false, message: "Google Authentication failed" });
+    console.error("Error in forgot password:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
+
+const resetPasswordController = async (req, res) => {
+  const { email, otp, newPassword } = req.body;
+
+  try {
+    const otpRecord = await OTP.findOne({ email, purpose: "password-reset" });
+    if (
+      !otpRecord ||
+      otpRecord.otp !== otp ||
+      otpRecord.expireAt < new Date()
+    ) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid or expired OTP" });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res
+        .status(400)
+        .json({ success: false, message: "User not found" });
+    }
+
+    user.password = newPassword; // Hashing handled in `pre("save")` middleware
+    await user.save();
+    await OTP.deleteOne({ email, purpose: "password-reset" });
+
+    res
+      .status(200)
+      .json({ success: true, message: "Password reset successfully" });
+  } catch (error) {
+    console.error("Error in resetting password:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+// const googleCallbackController = async (req, res) => {
+//   try {
+//     const user = req.user; // Passport injects `user` into the request object.
+
+//     // Generate JWT tokens
+//     const accessToken = generateAccessToken(user);
+//     const refreshToken = generateRefreshToken(user);
+
+//     // Optionally, save refresh token to the user document
+//     user.refreshTokens = user.refreshTokens || [];
+//     user.refreshTokens.push(refreshToken);
+//     await user.save();
+
+//     // Send response back to the client
+//     res.status(200).json({
+//       success: true,
+//       message: "Google Sign-In Successful",
+//       user: {
+//         avatar: user.avatar,
+//         name: user.name,
+//         email: user.email,
+//         role: user.role || "user",
+//       },
+//       accessToken,
+//       refreshToken,
+//     });
+//   } catch (error) {
+//     console.error("Error in Google callback:", error);
+//     res
+//       .status(500)
+//       .json({ success: false, message: "Google Authentication failed" });
+//   }
+// };
 
 const allUsers = async (req, res) => {
   try {
@@ -167,7 +220,8 @@ const getUserById = async (req, res) => {
 export {
   registerController,
   loginController,
-  googleCallbackController,
+  forgotPasswordController,
+  resetPasswordController,
   getUserById,
   allUsers,
 };

@@ -4,6 +4,7 @@ dotenv.config();
 import nodemailer from "nodemailer";
 import OTP from "../models/OTP.js"; // OTP model
 import crypto from "crypto"; // For generating random OTP
+import { User } from "../models/User.models.js";
 
 // Function to generate a 6-digit OTP
 const generateOTP = () => {
@@ -12,50 +13,37 @@ const generateOTP = () => {
 
 // Controller to generate and send OTP
 const generateOtpController = async (req, res) => {
-  const { email } = req.body; // User's email to send OTP
+  const { email, purpose } = req.body; // Add 'purpose'
 
   try {
-    // Check if the email is already registered (optional, can skip if it's only for verification)
-    // const existingUser = await User.findOne({ email });
-    // if (!existingUser) {
-    //   return res.status(400).json({ success: false, message: 'Email not registered' });
-    // }
+    // Validate purpose
+    if (!["verification", "password-reset"].includes(purpose)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid purpose" });
+    }
 
-    await OTP.deleteOne({ email });
+    await OTP.deleteMany({ email, purpose }); // Delete old OTPs for this purpose
 
-    // Generate OTP
-    const otp = generateOTP();
-
-    // Generate OTP
-
-    // Save OTP to DB with expiration time
-    const otpRecord = new OTP({
-      email,
-      otp,
-    });
+    const otp = generateOTP(); // Generate OTP
+    const otpRecord = new OTP({ email, otp, purpose }); // Save with purpose
     await otpRecord.save();
 
-    // Set up Nodemailer transport
-    const transporter = nodemailer.createTransport({
-      service: "gmail", // Using Gmail's SMTP service
-      auth: {
-        user: process.env.EMAIL, // Your email
-        pass: process.env.EMAIL_PASSWORD, // Your email app password
-      },
-    });
-
-    // Prepare email content
     const mailOptions = {
       from: process.env.EMAIL,
       to: email,
-      subject: "Your OTP Code",
-      text: `Your OTP code is: ${otp}`,
+      subject: `Your OTP for ${purpose}`,
+      text: `Your OTP code for ${purpose} is: ${otp}. This will expire in 10 minutes.`,
     };
 
-    // Send the OTP email
-    await transporter.sendMail(mailOptions);
+    await nodemailer
+      .createTransport({
+        service: "gmail",
+        auth: { user: process.env.EMAIL, pass: process.env.EMAIL_PASSWORD },
+      })
+      .sendMail(mailOptions);
 
-    res.status(200).json({ success: true, message: "OTP sent successfully!" });
+    res.status(200).json({ success: true, message: "OTP sent successfully" });
   } catch (error) {
     console.error("Error in generating OTP:", error);
     res.status(500).json({ success: false, message: "Error sending OTP" });
@@ -63,40 +51,39 @@ const generateOtpController = async (req, res) => {
 };
 
 // Controller to verify OTP
-const verifyOtpController = async (req, res) => {
-  const { email, otp } = req.body; // OTP entered by user
+const verifyEmailController = async (req, res) => {
+  const { email, otp } = req.body;
 
   try {
-    // Find OTP record in DB
-    const otpRecord = await OTP.findOne({ email });
-
-    if (!otpRecord) {
-      return res.status(400).json({ success: false, message: "OTP not found" });
+    const otpRecord = await OTP.findOne({ email, purpose: "verification" });
+    if (
+      !otpRecord ||
+      otpRecord.otp !== otp ||
+      otpRecord.expireAt < new Date().toISOString()
+    ) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid or expired OTP" });
     }
 
-    // Check if OTP has expired
-    console.log(new Date().toISOString());
-    console.log(otpRecord.expireAt);
-    if (new Date().toISOString() > otpRecord.expireAt) {
-      return res.status(400).json({ success: false, message: "OTP expired" });
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res
+        .status(400)
+        .json({ success: false, message: "User not found" });
     }
 
-    console.log(otpRecord.otp);
-    console.log(otp);
+    user.verified = true;
+    await user.save();
+    await OTP.deleteOne({ email, purpose: "verification" });
 
-    // Check if OTP is correct
-    if (otpRecord.otp !== otp) {
-      return res.status(400).json({ success: false, message: "Invalid OTP" });
-    }
-
-    // OTP is valid
     res
       .status(200)
-      .json({ success: true, message: "OTP verified successfully!" });
+      .json({ success: true, message: "Email verified successfully" });
   } catch (error) {
-    console.error("Error in verifying OTP:", error);
+    console.error("Error in verifying email:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
-export { generateOtpController, verifyOtpController };
+export { generateOtpController, verifyEmailController };
