@@ -24,8 +24,10 @@ app.use(
 );
 
 import userRouter from "./routes/auth.routes.js";
+import blogRouter from "./routes/blog.routes.js";
 
 app.use("/api/v1/", userRouter);
+app.use("/api/v1/", blogRouter);
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
