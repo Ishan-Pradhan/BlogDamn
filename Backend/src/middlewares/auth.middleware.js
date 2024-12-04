@@ -18,6 +18,7 @@ export const requireSignIn = (req, res, next) => {
     const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
 
     req.user = decoded; // Attach decoded user data (e.g., userId) to request
+    console.log(req.user);
     next();
   } catch (error) {
     console.error("Token Error:", error.message);

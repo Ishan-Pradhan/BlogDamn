@@ -14,6 +14,7 @@ const userSchema = Schema(
 
     role: { type: String, default: "user" },
     following: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    followers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     refreshTokens: [{ type: String }],
   },
   { timestamps: true }
