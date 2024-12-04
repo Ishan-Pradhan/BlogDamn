@@ -4,35 +4,45 @@ import { Blog } from "../models/Blog.models.js";
 // Create a new comment
 const createComment = async (req, res) => {
   try {
-    const { blogId, content } = req.body;
+    const { content, blog } = req.body;
 
-    if (!content.trim()) {
+    // Check if user information is attached
+    if (!req.user || !req.user.userId) {
       return res
         .status(400)
-        .json({ success: false, message: "Content is required" });
+        .json({ success: false, message: "User information is missing" });
     }
 
-    // Ensure the blog post exists
-    const blog = await Blog.findById(blogId);
-    if (!blog) {
+    // Validate required fields
+    if (!content.trim() || !blog) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Content and blog ID are required" });
+    }
+
+    // Ensure the referenced blog exists
+    const blogExists = await Blog.findById(blog);
+    if (!blogExists) {
       return res
         .status(404)
         .json({ success: false, message: "Blog not found" });
     }
 
-    const comment = await Comment.create({
+    // Create and save the comment
+    const newComment = new Comment({
       content,
-      blog: blogId,
-      user: req.user._id,
+      user: req.user.userId,
+      blog,
     });
 
-    res.status(201).json({ success: true, comment });
+    const savedComment = await newComment.save();
+
+    res.status(201).json({ success: true, comment: savedComment });
   } catch (error) {
     console.error("Error creating comment:", error);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res.status(500).json({ success: false, error: "Internal server error" });
   }
 };
-
 // Get all comments for a blog post
 export const getCommentsByBlog = async (req, res) => {
   try {
