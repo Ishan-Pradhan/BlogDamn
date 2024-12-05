@@ -100,3 +100,73 @@ export const deleteBlog = async (req, res) => {
     res.status(500).json({ message: "Failed to delete blog.", error });
   }
 };
+
+export const likeBlog = async (req, res) => {
+  const { id: blogId } = req.params; // Blog ID from the URL
+  const userId = req.user.userId; // Logged-in user's ID from JWT
+  console.log("hello");
+  try {
+    const blog = await Blog.findById(blogId);
+
+    if (!blog) {
+      return res.status(404).json({ message: "Blog not found." });
+    }
+
+    if (blog.likes.includes(userId)) {
+      return res
+        .status(400)
+        .json({ message: "You have already liked this blog." });
+    }
+
+    blog.likes.push(userId); // Add user to likes array
+    await blog.save();
+
+    res.status(200).json({ message: "Blog liked successfully." });
+  } catch (error) {
+    res.status(500).json({ error: "Something went wrong." });
+  }
+};
+
+export const unlikeBlog = async (req, res) => {
+  const { id: blogId } = req.params; // Blog ID from the URL
+  const userId = req.user.userId; // Logged-in user's ID from JWT
+
+  try {
+    const blog = await Blog.findById(blogId);
+
+    if (!blog) {
+      return res.status(404).json({ message: "Blog not found." });
+    }
+
+    if (!blog.likes.includes(userId)) {
+      return res
+        .status(400)
+        .json({ message: "You haven't liked this blog yet." });
+    }
+
+    blog.likes = blog.likes.filter((id) => id.toString() !== userId);
+    await blog.save();
+
+    res.status(200).json({ message: "Blog unliked successfully." });
+  } catch (error) {
+    res.status(500).json({ error: "Something went wrong." });
+  }
+};
+
+export const getBlogLikes = async (req, res) => {
+  const { id: blogId } = req.params; // Blog ID from the URL
+
+  try {
+    const blog = await Blog.findById(blogId).populate("likes", "username");
+
+    if (!blog) {
+      return res.status(404).json({ message: "Blog not found." });
+    }
+
+    res
+      .status(200)
+      .json({ likesCount: blog.likes.length, likedBy: blog.likes });
+  } catch (error) {
+    res.status(500).json({ error: "Something went wrong." });
+  }
+};
