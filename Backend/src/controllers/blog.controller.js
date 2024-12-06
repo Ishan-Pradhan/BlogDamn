@@ -104,7 +104,6 @@ export const deleteBlog = async (req, res) => {
 export const likeBlog = async (req, res) => {
   const { id: blogId } = req.params; // Blog ID from the URL
   const userId = req.user.userId; // Logged-in user's ID from JWT
-  console.log("hello");
   try {
     const blog = await Blog.findById(blogId);
 
@@ -168,5 +167,30 @@ export const getBlogLikes = async (req, res) => {
       .json({ likesCount: blog.likes.length, likedBy: blog.likes });
   } catch (error) {
     res.status(500).json({ error: "Something went wrong." });
+  }
+};
+
+export const getBlogs = async (req, res) => {
+  try {
+    const { page = 1, limit = 10 } = req.query; // Pagination parameters
+
+    const blogs = await Blog.find()
+      .populate("author", "username avatar") // Populate author details
+      .sort({ createdAt: -1 }) // Sort by newest first
+      .skip((page - 1) * limit) // Pagination logic
+      .limit(parseInt(limit)); // Limit the number of results
+
+    const totalBlogs = await Blog.countDocuments(); // Total number of blogs
+
+    res.status(200).json({
+      message: "Blogs retrieved successfully.",
+      blogs,
+      totalBlogs,
+      totalPages: Math.ceil(totalBlogs / limit),
+      currentPage: page,
+    });
+  } catch (error) {
+    console.error("Error fetching blogs:", error);
+    res.status(500).json({ message: "Failed to fetch blogs.", error });
   }
 };

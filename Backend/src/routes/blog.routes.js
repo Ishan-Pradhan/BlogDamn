@@ -3,6 +3,7 @@ import {
   createBlog,
   deleteBlog,
   getBlogLikes,
+  getBlogs,
   likeBlog,
   unlikeBlog,
   updateBlog,
@@ -18,7 +19,8 @@ router
 router.put("updateBlog/:id", updateBlog);
 router.delete("deleteBlog/:id", deleteBlog);
 
-router.post("/blogs/:id/like", requireSignIn, likeBlog);
+router.post("blogs/:id/like", requireSignIn, likeBlog);
 router.post("/blogs/:id/unlike", requireSignIn, unlikeBlog);
 router.get("/blogs/:id/likes", getBlogLikes);
+router.get("/blogs", getBlogs);
 export default router;

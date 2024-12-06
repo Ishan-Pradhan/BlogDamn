@@ -6,6 +6,7 @@ import LoginPage from "./pages/Auth/LoginPage";
 import SingleBlog from "./pages/SingleBlog";
 import SignupPage from "./pages/Auth/SignupPage";
 
+
 const App = () => {
   return (
     <BrowserRouter>
