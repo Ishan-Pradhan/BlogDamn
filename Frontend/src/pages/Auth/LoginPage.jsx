@@ -17,7 +17,7 @@ function LoginPage() {
               Please enter your details to log in.
             </p>
           </div>
-          <form action="">
+          <form action="" className="flex flex-col gap-4">
             <input
               type="text"
               placeholder="Email or Phone"
