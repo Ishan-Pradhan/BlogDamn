@@ -2,43 +2,43 @@
 @tailwind components;
 @tailwind utilities;
 
-html, body {
+html,
+body {
   height: 100%;
   margin: 0;
   box-sizing: border-box;
   font-family: "mulish";
 }
 
-.splide__arrow--prev{
-  left:-30px !important;
+.splide__arrow--prev {
+  left: -30px !important;
   height: 50px !important;
   width: 50px !important;
-  background-color: #FF8C42 !important;
+  background-color: #ff8c42 !important;
   opacity: 100% !important;
-
 }
 
-.splide__arrow--next{
-  right:-30px !important;
+.splide__arrow--next {
+  right: -30px !important;
   height: 50px !important;
   width: 50px !important;
-  background-color: #FF8C42 !important;
+  background-color: #ff8c42 !important;
   opacity: 100% !important;
-
 }
 
-.splide__arrow--next:hover,.splide__arrow--prev:hover{
-opacity: 80% !important;
+.splide__arrow--next:hover,
+.splide__arrow--prev:hover {
+  opacity: 80% !important;
 }
 
-.splide__arrow--next svg{
+.splide__arrow--next svg {
   fill: white !important;
 }
 
-.splide__arrow--prev svg{
+.splide__arrow--prev svg {
   fill: white !important;
 }
 
-.splide__track{
+.splide__track {
   border-radius: 0.75rem;
 }
