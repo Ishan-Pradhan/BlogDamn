@@ -8,11 +8,9 @@ import { generateOtpController } from "./otp.controller.js";
 const registerController = async (req, res) => {
   try {
     console.log("Request Body:", req.body);
-    console.log("Uploaded File:", req.file);
+    console.log("Uploaded Files:", req.files);
 
     const { username, email, password } = req.body;
-
-    // console.log(name, username, email, password);
 
     if ([username, email, password].some((field) => field.trim() === "")) {
       return res
@@ -27,20 +25,29 @@ const registerController = async (req, res) => {
         .send({ success: false, message: "Email or username already in use" });
     }
 
-    const avatarLocalPath = req.files?.avatar[0]?.path;
+    const avatarLocalPath = req.files?.avatar?.[0]?.path;
+    console.log("Avatar local path:", avatarLocalPath);
 
-    if (!avatarLocalPath)
+    if (!avatarLocalPath) {
       return res.status(400).send({ message: "avatar is required" });
+    }
 
     const avatarImage = await uploadOnCloudinary(avatarLocalPath);
+    
+    if (!avatarImage) {
+      return res.status(500).json({ 
+        success: false, 
+        message: "Failed to upload avatar to cloud. Please check your connection or try a smaller image." 
+      });
+    }
 
     const newUser = new User({
       avatar: avatarImage.url,
-
       username,
       email,
       password,
     });
+
     await newUser.save();
 
     const accessToken = generateAccessToken(newUser);

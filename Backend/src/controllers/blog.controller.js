@@ -6,30 +6,19 @@ import { User } from "../models/User.models.js";
 // Create a new blog
 export const createBlog = async (req, res) => {
   try {
-    const { title, content, author, image } = req.body; // Destructure author from body
-    console.log("Received data:", { title, content, author, image });
+    const { title, content, category } = req.body;
+    const authorId = req.user._id || req.user.userId;
+ // Support both just in case
 
-    // Ensure author is passed and valid
-    if (!author) {
-      return res.status(400).json({ message: "Author is required." });
+    if (!authorId) {
+      return res.status(401).json({ message: "Authentication required." });
     }
 
-    // Correct usage of ObjectId
-    const authorId = new mongoose.Types.ObjectId(author); // Convert to ObjectId
-
-    // Check if the author exists in the database
-    const authorDoc = await User.findById(authorId); // Check if the author exists in the User model
-    if (!authorDoc) {
-      return res.status(400).json({ message: "Author not found." });
+    if (!title || !content) {
+      return res.status(400).json({ message: "Title and content are required." });
     }
 
-    if (!title || !content || !author) {
-      return res.status(400).json({ message: "All fields are required." });
-    }
-
-    const imageLocalPath = req.files?.image?.[0]?.path; // Check if image file exists
-    console.log("Image Local Path:", imageLocalPath);
-
+    const imageLocalPath = req.files?.image?.[0]?.path;
     if (!imageLocalPath) {
       return res.status(400).json({ message: "Image is required." });
     }
@@ -46,15 +35,21 @@ export const createBlog = async (req, res) => {
     const blog = new Blog({
       title,
       content,
-      author: authorId, // Store author as ObjectId
-      image: blogImage.secure_url, // Store Cloudinary image URL
+      category,
+      author: authorId,
+      image: blogImage.secure_url,
     });
+
 
     // Save blog to DB
     await blog.save();
+    
+    // Populate author before sending response
+    await blog.populate("author", "username avatar");
+
     res.status(201).json({ message: "Blog created successfully.", blog });
   } catch (error) {
-    console.error(error);
+    console.error("Create Blog Error:", error);
     res.status(500).json({
       message: "Failed to create blog.",
       error: error.message || error,
@@ -172,25 +167,102 @@ export const getBlogLikes = async (req, res) => {
 
 export const getBlogs = async (req, res) => {
   try {
-    const { page = 1, limit = 10 } = req.query; // Pagination parameters
+    const { page = 1, limit = 10, search, category, sort } = req.query;
 
-    const blogs = await Blog.find()
-      .populate("author", "username avatar") // Populate author details
-      .sort({ createdAt: -1 }) // Sort by newest first
-      .skip((page - 1) * limit) // Pagination logic
-      .limit(parseInt(limit)); // Limit the number of results
+    const query = {};
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: "i" } },
+        { content: { $regex: search, $options: "i" } },
+      ];
+    }
+    if (category && category !== "Home") {
+      query.category = { $regex: category, $options: "i" };
+    }
 
-    const totalBlogs = await Blog.countDocuments(); // Total number of blogs
+    let blogsQuery = Blog.find(query).populate("author", "username avatar");
 
-    res.status(200).json({
-      message: "Blogs retrieved successfully.",
-      blogs,
-      totalBlogs,
-      totalPages: Math.ceil(totalBlogs / limit),
-      currentPage: page,
-    });
+    if (sort === "popular") {
+      // Sorting by likes length using aggregation would be better, but for now:
+      // We'll use aggregation to include likesCount
+      const blogs = await Blog.aggregate([
+        { $match: query },
+        {
+          $addFields: {
+            likesCount: { $size: "$likes" },
+          },
+        },
+        { $sort: { likesCount: -1, createdAt: -1 } },
+        { $skip: (page - 1) * limit },
+        { $limit: parseInt(limit) },
+        {
+          $lookup: {
+            from: "users",
+            localField: "author",
+            foreignField: "_id",
+            as: "authorDetails",
+          },
+        },
+        { $unwind: "$authorDetails" },
+        {
+          $project: {
+            title: 1,
+            content: 1,
+            category: 1,
+            image: 1,
+            likes: 1,
+            createdAt: 1,
+            author: {
+              _id: "$authorDetails._id",
+              username: "$authorDetails.username",
+              avatar: "$authorDetails.avatar",
+            },
+          },
+        },
+      ]);
+      const totalBlogs = await Blog.countDocuments(query);
+      return res.status(200).json({
+        blogs,
+        totalBlogs,
+        totalPages: Math.ceil(totalBlogs / limit),
+        currentPage: page,
+      });
+    } else {
+      // Default: sort by newest
+      const blogs = await blogsQuery
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(parseInt(limit));
+
+      const totalBlogs = await Blog.countDocuments(query);
+
+      res.status(200).json({
+        blogs,
+        totalBlogs,
+        totalPages: Math.ceil(totalBlogs / limit),
+        currentPage: page,
+      });
+    }
   } catch (error) {
     console.error("Error fetching blogs:", error);
     res.status(500).json({ message: "Failed to fetch blogs.", error });
   }
 };
+
+
+export const getBlogById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const blog = await Blog.findById(id).populate("author", "username avatar");
+
+    if (!blog) {
+      return res.status(404).json({ message: "Blog not found." });
+    }
+
+    res.status(200).json({ blog });
+  } catch (error) {
+    console.error("Error fetching blog by ID:", error);
+    res.status(500).json({ message: "Failed to fetch blog.", error });
+  }
+};
+

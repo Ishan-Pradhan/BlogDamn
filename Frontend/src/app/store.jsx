@@ -1,3 +1,10 @@
-import { configureStore } from "@reactjs/toolkit";
+import { configureStore } from "@reduxjs/toolkit";
+import authReducer from "../features/authSlice";
+import blogReducer from "../features/blogSlice";
 
-export const store = configureStore({});
+export const store = configureStore({
+  reducer: {
+    auth: authReducer,
+    blogs: blogReducer,
+  },
+});

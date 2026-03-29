@@ -4,7 +4,9 @@ import {
   deleteBlog,
   getBlogLikes,
   getBlogs,
+  getBlogById,
   likeBlog,
+
   unlikeBlog,
   updateBlog,
 } from "../controllers/blog.controller.js";
@@ -15,12 +17,19 @@ const router = express.Router();
 
 router
   .route("/createBlog")
-  .post(upload.fields([{ name: "image", maxCount: 1 }]), createBlog);
-router.put("updateBlog/:id", updateBlog);
-router.delete("deleteBlog/:id", deleteBlog);
+  .post(
+    requireSignIn,
+    upload.fields([{ name: "image", maxCount: 1 }]),
+    createBlog
+  );
 
-router.post("blogs/:id/like", requireSignIn, likeBlog);
+router.put("/update-blog/:id", requireSignIn, updateBlog);
+router.delete("/delete-blog/:id", requireSignIn, deleteBlog);
+
+router.post("/blogs/:id/like", requireSignIn, likeBlog);
 router.post("/blogs/:id/unlike", requireSignIn, unlikeBlog);
-router.get("/blogs/:id/likes", getBlogLikes);
+router.get("/blogs/:id", getBlogById);
 router.get("/blogs", getBlogs);
 export default router;
+
+
